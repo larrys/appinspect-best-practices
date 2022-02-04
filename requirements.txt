@@ -1,0 +1,2 @@
+splunk-appinspect >= 2.14.1
+regex >= 2.5.110

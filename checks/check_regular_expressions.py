@@ -1,0 +1,445 @@
+"""
+Best practice checks for regular expressions found in props.conf and
+transforms.conf.
+
+https://docs.splunk.com/Documentation/Splunk/latest/Admin/Propsconf
+https://docs.splunk.com/Documentation/Splunk/latest/Admin/Transformsconf
+"""
+import splunk_appinspect
+import os
+import regex as re
+from splunk_appinspect.configuration_file import ConfigurationFile
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_transforms")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_dynamic_field_names_transforms(app, reporter):
+    """
+    Checks that _KEY_1 also has _VAL_1 for REGEX in transforms.conf
+    """
+    key_regex = "^REGEX$"
+    config_file_paths = app.get_config_file_paths("transforms.conf")
+    if config_file_paths:
+        for directory, filename in iter(config_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            config: ConfigurationFile = app.transforms_conf(directory)
+            for stanza in set(config.sections_with_setting_key_pattern(key_regex)):
+                for setting in stanza.settings_with_key_pattern(key_regex):
+                    _dynamic_field_names(setting, reporter, file_path)
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_dynamic_field_names_props(app, reporter):
+    """
+    Checks that _KEY_x also has just one _VAL_x for props.conf
+    """
+    key_regex = "EXTRACT-"
+    config_file_paths = app.get_config_file_paths("props.conf")
+    if config_file_paths:
+        for directory, filename in iter(config_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            config: ConfigurationFile = app.props_conf(directory)
+            for stanza in set(config.sections_with_setting_key_pattern(key_regex)):
+                for setting in stanza.settings_with_key_pattern(key_regex):
+                    _dynamic_field_names(setting, reporter, file_path)
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_duplicate_extract(app, reporter):
+    """
+    Checks for duplicate EXTRACT regexes. These could be moved to a
+    transforms.conf REGEX entry.
+    """
+    key_regex = "EXTRACT-"
+    config_file_paths = app.get_config_file_paths("props.conf")
+    if config_file_paths:
+        for directory, filename in iter(config_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            config: ConfigurationFile = app.props_conf(directory)
+            regexes = {}
+            for stanza in set(config.sections_with_setting_key_pattern(key_regex)):
+                for setting in stanza.settings_with_key_pattern(key_regex):
+                    # Clean up regex to find effectively the same regex.
+                    regex = _cleanup_regex(setting.value)
+                    if regex in regexes:
+                        regexes[regex].append(setting)
+                    else:
+                        regexes[regex] = [setting]
+            for regex in regexes.keys():
+                if len(regexes[regex]) > 1:
+                    for dupe in regexes[regex]:
+                        output = f"Regular expression {dupe.value} duplicates another extract"
+                        reporter.warn(output, file_path, dupe.lineno)
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_transforms")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_duplicate_transforms_regex(app, reporter):
+    """
+    Checks for duplicate REGEX in transforms.
+    """
+    key_regex = "REGEX"
+    config_file_paths = app.get_config_file_paths("transforms.conf")
+    if config_file_paths:
+        for directory, filename in iter(config_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            config: ConfigurationFile = app.transforms_conf(directory)
+            regexes = {}
+            for stanza in set(config.sections_with_setting_key_pattern(key_regex)):
+                for setting in stanza.settings_with_key_pattern(key_regex):
+                    # Clean up regex to find effectively the same regex.
+                    regex = _cleanup_regex(setting.value)
+                    if regex in regexes:
+                        regexes[regex].append(stanza)
+                    else:
+                        regexes[regex] = [stanza]
+            for regex in regexes.keys():
+                if len(regexes[regex]) > 1:
+                    # If one has MV_ADD and the other does not, let it pass (but
+                    # only if there are two duplicates based off regular
+                    # expression)
+                    # TODO, should also compare values of MV_ADD if one is True
+                    # and other False (and/or null)
+                    if len(regexes[regex]) == 2 and len(set([s.has_option("MV_ADD") for s in regexes[regex]])) == 2:
+                        pass
+                    else:
+                        for dupe in regexes[regex]:
+                            output = f"Regular expression {dupe.get_option('REGEX').value} duplicates another REGEX"
+                            reporter.warn(output, file_path,
+                                          dupe.get_option("REGEX").lineno)
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_transforms", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_extract_duplicates_transforms(app, reporter):
+    """
+    Checks for EXTRACT regular expressions that duplicate REGEX in
+    transforms.conf
+    """
+    props_key_regex_pattern = "EXTRACT-"
+    transforms_key_regex_pattern = "^REGEX$"
+    props_file_paths = app.get_config_file_paths("props.conf")
+    transforms_file_paths = app.get_config_file_paths("transforms.conf")
+    transforms_regexes = {}
+    if props_file_paths and transforms_file_paths:
+        for directory, filename in iter(transforms_file_paths.items()):
+            transforms_config: ConfigurationFile = app.transforms_conf(
+                directory)
+            transforms_extract_sections = set(
+                transforms_config.sections_with_setting_key_pattern(transforms_key_regex_pattern))
+            for stanza in transforms_extract_sections:
+                regex = _cleanup_regex(stanza.get_option("REGEX").value)
+                # there can be duplicates, but we check for those elsewhere
+                transforms_regexes[regex] = stanza
+        for directory, filename in iter(props_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            props_config: ConfigurationFile = app.props_conf(directory)
+            props_extract_sections = list(
+                props_config.sections_with_setting_key_pattern(props_key_regex_pattern))
+            for stanza in props_extract_sections:
+                for setting in stanza.settings_with_key_pattern(props_key_regex_pattern):
+                    regex = _cleanup_regex(setting.value)
+                    if regex in transforms_regexes:
+                        output = f"[{stanza.name}]:{setting.name} duplicates transforms {transforms_regexes[regex].name}"
+                        reporter.warn(output,
+                                      file_path, setting.lineno)
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_sedcmd(app, reporter):
+    """
+    Checks that the regex in s/// is valid. Checks that only s/// and y/// are
+    used. Makes sure for y/// that same length of input and replacement part,
+    and no flags for y///
+    """
+    key_regex = "^SEDCMD-"
+    config_file_paths = app.get_config_file_paths("props.conf")
+    if config_file_paths:
+        for directory, filename in iter(config_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            config: ConfigurationFile = app.props_conf(directory)
+            pattern = re.compile(
+                r"""
+                (?<type>[sy])   # Start with s or y
+                \/              # followed by a /
+                (?<search>.*?)  # Capture everything as the named group search
+                (?<!(?<!\\)\\)  # Don't let escaped / stop too early
+                \/              # The middle /
+                (?<replace>.*?) # Everything in the replace part.
+                (?<!(?<!\\)\\)  # Don't let escaped / stop too early
+                \/              # Closing /
+                (?<flags>.*)    # Flags at the end
+                """,
+                re.VERBOSE
+            )
+            for stanza in set(config.sections_with_setting_key_pattern(key_regex)):
+                for setting in stanza.settings_with_key_pattern(key_regex):
+                    m = pattern.match(setting.value)
+                    if not m:
+                        output = f"Invalid [{stanza.name}]:{setting.name} of {setting.value}"
+                        reporter.fail(output, file_path, setting.lineno)
+                    else:
+                        type = m["type"]
+                        search = m["search"]
+                        replace = m["replace"]
+                        flags = m["flags"]
+                        if type == "y":
+                            if len(flags) > 0:
+                                output = "No flags allowed for y/// in SEDCMD"
+                                reporter.fail(
+                                    output, file_path, setting.lineno)
+                            if len(search) != len(replace):
+                                output = "For y///, both sides should be the same length"
+                                reporter.fail(output, file_path,
+                                              setting.lineno)
+                        else:
+                            # TODO Check flags here are valid for s///
+                            # g, \d+, iI, mM
+                            # what about e and p?
+                            # w is for a file, so not supported
+                            _regex_valid(setting, reporter,
+                                         file_path, regex=search)
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_transforms")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_transforms(app, reporter):
+    """
+    Checks that REGEX is valid in transforms.conf.
+    """
+    key_regex = "^REGEX$"
+    config_file_paths = app.get_config_file_paths("transforms.conf")
+    if config_file_paths:
+        for directory, filename in iter(config_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            config: ConfigurationFile = app.transforms_conf(directory)
+            for stanza in set(config.sections_with_setting_key_pattern(key_regex)):
+                _regex_valid(stanza.get_option("REGEX"), reporter, file_path)
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_extract(app, reporter):
+    """
+    Checks that EXTRACT regex is valid in props.conf.
+    """
+    # TODO, add check that there needs to be at least one named extract here
+    # (improved one over appinspect slightly broken one)
+    _regex_valid_for_property(app, reporter, "^EXTRACT-")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_break_only_before(app, reporter):
+    """
+    Checks that BREAK_ONLY_BEFORE in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^BREAK_ONLY_BEFORE$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_event_breaker(app, reporter):
+    """
+    Checks that EVENT_BREAKER in props.conf is a valid regular expression.
+    """
+    # TODO, there needs to be a check there is an unnamed capture group
+    _regex_valid_for_property(app, reporter, "^EVENT_BREAKER$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_field_header_regex(app, reporter):
+    """
+    Checks that FIELD_HEADER_REGEX in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^FIELD_HEADER_REGEX$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_lb_chunk_breaker(app, reporter):
+    """
+    Checks that LB_CHUNK_BREAKER in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^LB_CHUNK_BREAKER$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_line_breaker(app, reporter):
+    """
+    Checks that LINE_BREAKER in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^LINE_BREAKER$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_must_break_after(app, reporter):
+    """
+    Checks that MUST_BREAK_AFTER in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^MUST_BREAK_AFTER$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_must_not_break_after(app, reporter):
+    """
+    Checks that MUST_NOT_BREAK_AFTER in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^MUST_NOT_BREAK_AFTER$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_must_not_break_before(app, reporter):
+    """
+    Checks that MUST_NOT_BREAK_BEFORE in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^MUST_NOT_BREAK_BEFORE$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_preamble_regex(app, reporter):
+    """
+    Checks that PREAMBLE_REGEX in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^PREAMBLE_REGEX$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_time_prefix(app, reporter):
+    """
+    Checks that TIME_PREFIX in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^TIME_PREFIX$")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_more_than(app, reporter):
+    """
+    Checks that MORE_THAN in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^MORE_THAN")
+
+
+@splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
+@splunk_appinspect.cert_version(min="2.14.1")
+def check_valid_regex_for_less_than(app, reporter):
+    """
+    Checks that LESS_THAN in props.conf is a valid regular expression.
+    """
+    _regex_valid_for_property(app, reporter, "^LESS_THAN")
+
+
+# Helper methods
+
+
+def _regex_valid_for_property(app, reporter, property_pattern):
+    """
+    Checks the regex for props.conf property that is expecting valid a valid
+    regular expression.
+    """
+    config_file_paths = app.get_config_file_paths("props.conf")
+    if config_file_paths:
+        for directory, filename in iter(config_file_paths.items()):
+            file_path = os.path.join(directory, filename)
+            config: ConfigurationFile = app.props_conf(directory)
+            for stanza in set(config.sections_with_setting_key_pattern(property_pattern)):
+                for setting in stanza.settings_with_key_pattern(property_pattern):
+                    _regex_valid(setting, reporter, file_path)
+
+
+def _regex_valid(setting, reporter, file_path, regex=None):
+    """
+    Checks that the regex is valid, at least according to the regex library.
+    Splunk's regex engine might have a different opinion. Try to capture those
+    differences here, and check for them, if possible.
+    """
+    if regex is None:
+        regex = setting.value
+    try:
+        pattern = re.compile(regex)
+    except re.error:
+        output = f"Regex {regex} is invalid in {setting.name}"
+        reporter.fail(output, file_path, setting.lineno)
+        return
+    # Named capture groups checks
+    if len(pattern.groupindex.keys()) > 0:
+        # find duplicate named capture groups
+        named_capture_pattern = re.compile(
+            r"""
+            \(              # Start of capture group
+            (?<!(?<!\\)\\)  # So long as it is  not preceded by a \ (but \\ is okay)
+            \?P?<           # Named capture group flag ?<... or ?P<...
+            ([^>]+)         # Name of capture group
+            >               # End of capture group name
+            """, re.VERBOSE)
+        groups = named_capture_pattern.findall(regex)
+        if len(groups) != len(set(groups)):
+            output = f"Duplicate named groups in {regex}"
+            reporter.fail(output, file_path, setting.lineno)
+
+
+def _dynamic_field_names(setting, reporter, file_path):
+    """
+    Checks that for each _KEY_x we have a _VAL_x, and vice-versa, and fails if
+    that is the case. This also checks if there is an extra named capture group,
+    which could be unintended, this issues a warning, since it might be valid in
+    some scenarios. TODO, this is valid in props.conf EXTRACT settings, but not
+    sure about transforms REGEX setting.
+    """
+    pattern = re.compile(setting.value)
+    key_val_pattern = re.compile(r"_(?<type>(?:KEY|VAL))_(?<id>.*)")
+    groups = list(filter(key_val_pattern.match, pattern.groupindex))
+    if len(groups) == 0:
+        # Can't call not_applicable, since it will flag that for all of them as that
+        pass
+    elif len(groups) != len(pattern.groupindex.keys()):
+        output = "Extra named capture group defined in regex with _KEY_ and _VAL_"
+        reporter.warn(output, file_path, setting.lineno)
+    else:
+        for group in groups:
+            m = key_val_pattern.match(group)
+            type = m.group('type')
+            id = m.group('id')
+            if type == "KEY":
+                if len(list(filter(lambda i: i == f"_VAL_{id}", groups))) != 1:
+                    output = f"Have _KEY_{id}, could not find _VAL_{id}"
+                    reporter.fail(output, file_path, setting.lineno)
+            else:
+                if len(list(filter(lambda i: i == f"_KEY_{id}", groups))) != 1:
+                    output = f"Have _VAL_{id}, could not find _KEY_{id}"
+                    reporter.fail(output, file_path, setting.lineno)
+
+
+def _cleanup_regex(input):
+    """
+    Clean up (?P<name>...) to (?<name>...), since they are in effect, the same
+    regular expression. We also renumber _KEY_x and _VAL_x, so we can find
+    duplicates easier that are in effect, the same regular expression.
+    """
+    pattern = re.compile(r"(?<!(?<!\\)\\)\(\?(P)<")
+    regex = re.sub(pattern, "(?<", input)
+    # These two regular expressions are effectively the same:
+    #
+    # (?<_KEY_1>.*):(?<_VAL_1_>.*)
+    # (?<_KEY_2>.*):(?<_VAL_2_>.*)
+    #
+    # This cleans them up
+    key_pattern = re.compile(r"_KEY_(?<id>.*)")
+    for (idx, key) in enumerate(list(filter(key_pattern.match, re.compile(regex).groupindex))):
+        id = key_pattern.match(key)['id']
+        regex = re.sub(r"<_VAL_" + re.escape(id) + r">",
+                       f"<_VAL_{str(idx)}>", regex)
+        regex = re.sub(r"<_KEY_" + re.escape(id) + r">",
+                       f"<_KEY_{str(idx)}>", regex)
+    return regex
