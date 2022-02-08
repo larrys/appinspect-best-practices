@@ -70,8 +70,9 @@ def check_duplicate_extract(app, reporter):
             for regex in regexes.keys():
                 if len(regexes[regex]) > 1:
                     for dupe in regexes[regex]:
-                        output = f"Regular expression {dupe.value} duplicates another extract"
-                        reporter.warn(output, file_path, dupe.lineno)
+                        if not ignorable(setting, "duplicate_regex"):
+                            output = f"Regular expression {dupe.value} duplicates another extract"
+                            reporter.warn(output, file_path, dupe.lineno)
 
 
 @splunk_appinspect.tags("best_practices", "best_practices_transforms")
@@ -106,9 +107,10 @@ def check_duplicate_transforms_regex(app, reporter):
                         pass
                     else:
                         for dupe in regexes[regex]:
-                            output = f"Regular expression {dupe.get_option('REGEX').value} duplicates another REGEX"
-                            reporter.warn(output, file_path,
-                                          dupe.get_option("REGEX").lineno)
+                            if not ignorable(setting, "duplicate_regex"):
+                                output = f"Regular expression {dupe.get_option('REGEX').value} duplicates another REGEX"
+                                reporter.warn(output, file_path,
+                                              dupe.get_option("REGEX").lineno)
 
 
 @splunk_appinspect.tags("best_practices", "best_practices_transforms", "best_practices_props")
@@ -142,9 +144,10 @@ def check_extract_duplicates_transforms(app, reporter):
                 for setting in stanza.settings_with_key_pattern(props_key_regex_pattern):
                     regex = _cleanup_regex(setting.value)
                     if regex in transforms_regexes:
-                        output = f"[{stanza.name}]:{setting.name} duplicates transforms {transforms_regexes[regex].name}"
-                        reporter.warn(output,
-                                      file_path, setting.lineno)
+                        if not ignorable(setting, "duplicate_regex"):
+                            output = f"[{stanza.name}]:{setting.name} duplicates transforms {transforms_regexes[regex].name}"
+                            reporter.warn(output,
+                                          file_path, setting.lineno)
 
 
 @splunk_appinspect.tags("best_practices", "best_practices_regex", "best_practices_props")
@@ -404,8 +407,9 @@ def _dynamic_field_names(setting, reporter, file_path):
         # Can't call not_applicable, since it will flag that for all of them as that
         pass
     elif len(groups) != len(pattern.groupindex.keys()):
-        output = "Extra named capture group defined in regex with _KEY_ and _VAL_"
-        reporter.warn(output, file_path, setting.lineno)
+        if not ignorable(setting, "extra_capture_group"):
+            output = "Extra named capture group defined in regex with _KEY_ and _VAL_"
+            reporter.warn(output, file_path, setting.lineno)
     else:
         for group in groups:
             m = key_val_pattern.match(group)
@@ -443,3 +447,38 @@ def _cleanup_regex(input):
         regex = re.sub(r"<_KEY_" + re.escape(id) + r">",
                        f"<_KEY_{str(idx)}>", regex)
     return regex
+
+
+def ignorable(setting, rule_name):
+    """
+    Is this item ignorable? Not all checks are ignorable. Currently only
+    warnings.
+
+    Add a comment like this before the setting.
+
+    # ignore <RULE_NAME>
+
+    Replace <RULE_NAME> with the rule name in question. If you need to ignore
+    multiple rules, add multiple comments.
+    
+    # ignore <RULE_NAME_1> # ignore <RULE_NAME_2>
+    
+    The rule name might not be the check methond, since some methods call a
+    shared method between multiple rules. TODO how to make this discoverable
+    without saying it for each check warn/fail?
+    
+    Current rule_names that are ignorable:
+    
+    extra_capture_group
+    duplicate_regex
+    
+    These only apply to THESE app inspect checks. Not the ones provided by
+    Splunk.
+    """
+    return False
+    # TODO, for some reason if props.conf in test has extra newline, it fails.
+    # Bug in the configuration file parsing?
+    # for header in setting.header:
+    #     if header == f"# ignore {rule_name}":
+    #         return True
+    # return False
