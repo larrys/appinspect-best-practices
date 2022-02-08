@@ -8,6 +8,8 @@ You will need to follow [these directions](https://dev.splunk.com/enterprise/doc
 
 Then when you run `splunk_appinspect` CLI you will need to specify `--custom-checks-dir` and pass in the directory containing the custom checks. You will also want to include `--included-tags best_practices` to include these checks.
 
+You can also run `./check_best_practices.sh <path_to_archive_or_app_folder>` to run _just_ the best practices checks, and output the results.
+
 ## Checks
 
 The doc strings for each check should give you an idea of what it checks. _TODO_ flesh this out from doc strings.
