@@ -1,0 +1,164 @@
+[
+  [
+    "fail",
+    [
+      "Have _KEY_1, could not find _VAL_1",
+      "default/props.conf",
+      2
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _KEY_1, could not find _VAL_1",
+      "default/transforms.conf",
+      2
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _KEY_2, could not find _VAL_2",
+      "default/props.conf",
+      4
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _KEY_2, could not find _VAL_2",
+      "default/props.conf",
+      5
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _KEY_2, could not find _VAL_2",
+      "default/props.conf",
+      6
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _KEY_2, could not find _VAL_2",
+      "default/transforms.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _KEY_2, could not find _VAL_2",
+      "default/transforms.conf",
+      11
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _KEY_2, could not find _VAL_2",
+      "default/transforms.conf",
+      14
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/props.conf",
+      3
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/props.conf",
+      4
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/props.conf",
+      5
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/props.conf",
+      6
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/transforms.conf",
+      5
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/transforms.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/transforms.conf",
+      11
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Have _VAL_1, could not find _KEY_1",
+      "default/transforms.conf",
+      14
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Extra named capture group defined in regex with _KEY_ and _VAL_",
+      "default/props.conf",
+      7
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Extra named capture group defined in regex with _KEY_ and _VAL_",
+      "default/transforms.conf",
+      17
+    ],
+    {}
+  ]
+]

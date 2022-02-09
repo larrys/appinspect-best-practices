@@ -1,0 +1,38 @@
+[
+  [
+    "fail",
+    [
+      "For y///, both sides should be the same length",
+      "default/props.conf",
+      4
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Invalid [bad]:SEDCMD-1 of s/regex/replacement",
+      "default/props.conf",
+      2
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "No flags allowed for y/// in SEDCMD",
+      "default/props.conf",
+      3
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Regex (regex is invalid in SEDCMD-4",
+      "default/props.conf",
+      5
+    ],
+    {}
+  ]
+]

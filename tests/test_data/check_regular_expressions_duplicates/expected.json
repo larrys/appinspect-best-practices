@@ -1,0 +1,191 @@
+[
+  [
+    "warn",
+    [
+      "Regular expression ([^\\s\\=]+)=\"([^\"]+)\" duplicates another REGEX",
+      "default/transforms.conf",
+      20
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression ([^\\s\\=]+)=\"([^\"]+)\" duplicates another REGEX",
+      "default/transforms.conf",
+      25
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression A:(?P<_KEY_1>\\w+)\\s*:\\s*(?P<_VAL_1>\\w+) duplicates another REGEX",
+      "default/transforms.conf",
+      2
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression A:(?P<_KEY_1>\\w+)\\s*:\\s*(?P<_VAL_1>\\w+) duplicates another REGEX",
+      "default/transforms.conf",
+      5
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression B:(?<_KEY_2>\\w+)\\s*:\\s*(?<_VAL_2>\\w+) duplicates another REGEX",
+      "default/transforms.conf",
+      11
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression B:(?P<_KEY_2>\\w+)\\s*:\\s*(?P<_VAL_2>\\w+) duplicates another REGEX",
+      "default/transforms.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression C:(?<_KEY_A>\\w+)\\s*:\\s*(?<_VAL_A>\\w+) duplicates another REGEX",
+      "default/transforms.conf",
+      14
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression C:(?<_KEY_B>\\w+)\\s*:\\s*(?<_VAL_B>\\w+) duplicates another REGEX",
+      "default/transforms.conf",
+      17
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression tA:(?P<_KEY_1>\\w+)\\s*:\\s*(?P<_VAL_1>\\w+) duplicates another extract",
+      "default/props.conf",
+      2
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression tA:(?P<_KEY_1>\\w+)\\s*:\\s*(?P<_VAL_1>\\w+) duplicates another extract",
+      "default/props.conf",
+      3
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression tB:(?<_KEY_2>\\w+)\\s*:\\s*(?<_VAL_2>\\w+) duplicates another extract",
+      "default/props.conf",
+      5
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression tB:(?P<_KEY_2>\\w+)\\s*:\\s*(?P<_VAL_2>\\w+) duplicates another extract",
+      "default/props.conf",
+      4
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression tC:(?<_KEY_A>\\w+)\\s*:\\s*(?<_VAL_A>\\w+) duplicates another extract",
+      "default/props.conf",
+      6
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "Regular expression tC:(?<_KEY_B>\\w+)\\s*:\\s*(?<_VAL_B>\\w+) duplicates another extract",
+      "default/props.conf",
+      7
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "[bad]:EXTRACT-7 duplicates transforms seven",
+      "default/props.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "[bad]:EXTRACT-7 duplicates transforms seven",
+      "default/props.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "[bad]:EXTRACT-7 duplicates transforms seven",
+      "default/props.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "[bad]:EXTRACT-7 duplicates transforms seven",
+      "default/props.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "[bad]:EXTRACT-7 duplicates transforms seven",
+      "default/props.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "[bad]:EXTRACT-7 duplicates transforms seven",
+      "default/props.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "[bad]:EXTRACT-7 duplicates transforms seven",
+      "default/props.conf",
+      8
+    ],
+    {}
+  ]
+]

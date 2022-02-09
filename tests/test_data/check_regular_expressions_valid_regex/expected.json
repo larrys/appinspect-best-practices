@@ -1,0 +1,92 @@
+[
+  [
+    "fail",
+    [
+      "Duplicate named groups in (?<name>.*)(?<name>.*)",
+      "default/props.conf",
+      6
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Duplicate named groups in (?<name>.*)(?<name>.*)",
+      "default/transforms.conf",
+      14
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Duplicate named groups in (?<name>.*)(?P<name>.*)",
+      "default/props.conf",
+      5
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Duplicate named groups in (?<name>.*)(?P<name>.*)",
+      "default/transforms.conf",
+      11
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Duplicate named groups in (?P<name>.*)(?P<name>.*)",
+      "default/props.conf",
+      4
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Duplicate named groups in (?P<name>.*)(?P<name>.*)",
+      "default/transforms.conf",
+      8
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Regex (.* is invalid in EXTRACT-1",
+      "default/props.conf",
+      2
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Regex (.* is invalid in REGEX",
+      "default/transforms.conf",
+      2
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Regex .*) is invalid in EXTRACT-2",
+      "default/props.conf",
+      3
+    ],
+    {}
+  ],
+  [
+    "fail",
+    [
+      "Regex .*) is invalid in REGEX",
+      "default/transforms.conf",
+      5
+    ],
+    {}
+  ]
+]

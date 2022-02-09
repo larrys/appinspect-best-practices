@@ -1,0 +1,92 @@
+[
+  [
+    "warn",
+    [
+      "EVENT_BREAKER is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "EVENT_BREAKER_ENABLE is false, when it should be true for [bad3]",
+      "default/props.conf",
+      13
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "EVENT_BREAKER_ENABLE is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "LINE_BREAKER is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "MAX_TIMESTAMP_LOOKAHEAD is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "SHOULD_LINEMERGE is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "SHOULD_LINEMERGE is true, when it should be false for [bad2]",
+      "default/props.conf",
+      3
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "TIME_FORMAT is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "TIME_PREFIX is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ],
+  [
+    "warn",
+    [
+      "TRUNCATE is not set for [bad1]",
+      "default/props.conf",
+      1
+    ],
+    {}
+  ]
+]

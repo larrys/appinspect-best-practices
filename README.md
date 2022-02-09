@@ -14,15 +14,26 @@ You can also run `./check_best_practices.sh <path_to_archive_or_app_folder>` to 
 
 The doc strings for each check should give you an idea of what it checks. _TODO_ flesh this out from doc strings.
 
+### Regular Expression Checks
+
+_TODO_ Enumerate them here
+
+### Magic Eight Checks
+
+These check that the magic eight `props.conf` settings are configured. See [Magic 8](https://kinneygroup.com/blog/splunk-magic-8-props-conf/) for more details.
+
 ### Future Checks
 
-- Checks that the [magic 8](https://kinneygroup.com/blog/splunk-magic-8-props-conf/) are set.
 - transforms.conf checks
   - Checking REGEX and FORMAT map together appropriately
     - Check where unnamed capture group count matches format $var count.
     - Unnamed capture group mixed in with named capture groups
     - Is it valid to have FORMAT when your REGEX is just named capture groups?
     - There might be lots of edge cases...
+
+## App Inspect Tags
+
+_TODO_ List them here.
 
 ## Contributing
 
