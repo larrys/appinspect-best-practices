@@ -3,6 +3,7 @@ import os
 import regex as re
 from splunk_appinspect.configuration_file import ConfigurationFile
 from splunk_appinspect.splunk import normalizeBoolean
+from .shared import _is_numeric
 
 
 @splunk_appinspect.tags("best_practices", "best_practices_magic_eight")
@@ -145,13 +146,3 @@ def check_event_breaker(app, reporter):
             if not stanza.has_option(property):
                 output = f"{property} is not set for [{stanza.name}]"
                 reporter.warn(output, file_path, stanza.lineno)
-
-# Helpers
-
-
-def _is_numeric(property_value):
-    try:
-        int(property_value)
-        return True
-    except ValueError:
-        return False
