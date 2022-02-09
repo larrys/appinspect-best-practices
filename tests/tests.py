@@ -60,6 +60,21 @@ class TestCheckRegularExpressions(BaseTest):
             getattr(check_regular_expressions, check_name)(app, self.reporter)
         self.assert_clean()
 
+    def test_clean_due_to_ignore(self):
+        """
+        This test checks things in
+        test_data/check_regular_expressions_ignorable, all the props.conf and
+        transforms.conf settings are clean since they have ignores in place
+        """
+        from checks import check_regular_expressions
+
+        app = self.get_app("test_data/check_regular_expressions_ignorable")
+        reporter = Mock()
+        for check_name in [c for c in dir(check_regular_expressions) if c.startswith("check_")]:
+            getattr(check_regular_expressions, check_name)(app, reporter)
+        reporter.warn.assert_not_called()
+        reporter.fail.assert_not_called()
+
     def test_empty(self):
         """
         This check empty is just checking an empty app does not throw any
