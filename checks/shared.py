@@ -106,7 +106,7 @@ def _cleanup_regex(input):
     return regex
 
 
-def ignorable(setting, rule_name):
+def ignorable(setting, rule_names, stanza=None):
     """
     Is this item ignorable? Not all checks are ignorable. Currently only
     warnings.
@@ -126,19 +126,37 @@ def ignorable(setting, rule_name):
 
     Current rule_names that are ignorable:
 
-    extra_capture_group
-    duplicate_regex
+    From check_regular_expressions:
+        extra_capture_group
+        duplicate_regex
 
     These only apply to THESE app inspect checks. Not the ones provided by
     Splunk.
+
+    You can also apply this to the stanza header to ignore it for all settings
+    in the stanza.
+
+    WARNING: There is a bug in the config file parsing, where if the config file
+    lacks an ending newline, it does not have header (comment) information for
+    the setting or stanza. Please ensure your config file has a trailing new
+    line to end the file.
     """
+    if type(rule_names) is tuple:
+        for rule_name in rule_names:
+            return _ignorable(setting, rule_name, stanza)
+    else:
+        return _ignorable(setting, rule_names, stanza)
+
+
+def _ignorable(setting, rule_name, stanza=None):
+    for header in setting.header:
+        if header == f"# ignore {rule_name}":
+            return True
+    if stanza:
+        for header in stanza.header:
+            if header == f"# ignore {rule_name}":
+                return True
     return False
-    # TODO, for some reason if props.conf in test has extra newline, it fails.
-    # Bug in the configuration file parsing?
-    # for header in setting.header:
-    #     if header == f"# ignore {rule_name}":
-    #         return True
-    # return False
 
 
 def _is_numeric(property_value):

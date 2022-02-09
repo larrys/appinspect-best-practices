@@ -60,8 +60,6 @@ class TestCheckRegularExpressions(BaseTest):
             getattr(check_regular_expressions, check_name)(app, self.reporter)
         self.assert_clean()
 
-    # Skip for now, till we can figure out bug in config parsing.
-    @unittest.skip
     def test_clean_due_to_ignore(self):
         """
         This test checks things in

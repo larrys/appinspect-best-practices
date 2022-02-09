@@ -71,7 +71,7 @@ def check_duplicate_extract(app, reporter):
             for regex in regexes.keys():
                 if len(regexes[regex]) > 1:
                     for dupe in regexes[regex]:
-                        if not ignorable(setting, "duplicate_regex"):
+                        if not ignorable(setting, "duplicate_regex", stanza=stanza):
                             output = f"Regular expression {dupe.value} duplicates another extract"
                             reporter.warn(output, file_path, dupe.lineno)
 
@@ -108,7 +108,7 @@ def check_duplicate_transforms_regex(app, reporter):
                         pass
                     else:
                         for dupe in regexes[regex]:
-                            if not ignorable(setting, "duplicate_regex"):
+                            if not ignorable(setting, "duplicate_regex", stanza=stanza):
                                 output = f"Regular expression {dupe.get_option('REGEX').value} duplicates another REGEX"
                                 reporter.warn(output, file_path,
                                               dupe.get_option("REGEX").lineno)
@@ -145,7 +145,7 @@ def check_extract_duplicates_transforms(app, reporter):
                 for setting in stanza.settings_with_key_pattern(props_key_regex_pattern):
                     regex = _cleanup_regex(setting.value)
                     if regex in transforms_regexes:
-                        if not ignorable(setting, "duplicate_regex"):
+                        if not ignorable(setting, "duplicate_regex", stanza=stanza):
                             output = f"[{stanza.name}]:{setting.name} duplicates transforms {transforms_regexes[regex].name}"
                             reporter.warn(output,
                                           file_path, setting.lineno)
