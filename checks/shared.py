@@ -106,7 +106,7 @@ def _cleanup_regex(input):
     return regex
 
 
-def ignorable(setting, rule_names, stanza=None):
+def ignorable(setting, rule_names, stanza=None, config=None):
     """
     Is this item ignorable? Not all checks are ignorable. Currently only
     warnings.
@@ -142,18 +142,27 @@ def ignorable(setting, rule_names, stanza=None):
     line to end the file.
     """
     if type(rule_names) is tuple:
+        checks = []
         for rule_name in rule_names:
-            return _ignorable(setting, rule_name, stanza)
+            checks.append(_ignorable(setting, rule_name, stanza, config))
+        if True in checks:
+            return True
+        else:
+            return False
     else:
-        return _ignorable(setting, rule_names, stanza)
+        return _ignorable(setting, rule_names, stanza, config)
 
 
-def _ignorable(setting, rule_name, stanza=None):
+def _ignorable(setting, rule_name, stanza=None, config=None):
     for header in setting.header:
         if header == f"# ignore {rule_name}":
             return True
     if stanza:
         for header in stanza.header:
+            if header == f"# ignore {rule_name}":
+                return True
+    if config:
+        for header in config.headers:
             if header == f"# ignore {rule_name}":
                 return True
     return False

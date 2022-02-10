@@ -17,11 +17,11 @@ def check_should_linemerge(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("should_linemerge", "magic8")):
+                if not ignorable(stanza, ("should_linemerge", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
             elif normalizeBoolean(stanza.get_option(property).value):
-                if not ignorable(stanza.get_option(property), ("should_linemerge", "magic8"), stanza=stanza):
+                if not ignorable(stanza.get_option(property), ("should_linemerge", "magic8"), stanza=stanza, config=props_config):
                     output = f"{property} is true, when it should be false for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
 
@@ -37,7 +37,7 @@ def check_line_breaker(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("line_breaker", "magic8")):
+                if not ignorable(stanza, ("line_breaker", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
 
@@ -53,7 +53,7 @@ def check_time_prefix(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("time_prefix", "magic8")):
+                if not ignorable(stanza, ("time_prefix", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
 
@@ -69,17 +69,17 @@ def check_max_timestamp_lookahead(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("max_timestamp_lookahead", "magic8")):
+                if not ignorable(stanza, ("max_timestamp_lookahead", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
             else:
                 setting = stanza.get_option(property)
                 if not _is_numeric(setting.value):
-                    if not ignorable(setting, ("max_timestamp_lookahead", "magic8"), stanza=stanza):
+                    if not ignorable(setting, ("max_timestamp_lookahead", "magic8"), stanza=stanza, config=props_config):
                         output = f"{property} is not numeric for [{stanza.name}] ({setting.value})"
                         reporter.warn(output, file_path, setting.lineno)
                 elif not int(setting.value) >= 0:
-                    if not ignorable(setting, ("max_timestamp_lookahead", "magic8"), stanza=stanza):
+                    if not ignorable(setting, ("max_timestamp_lookahead", "magic8"), stanza=stanza, config=props_config):
                         output = f"{property} is not >= 0 [{stanza.name}] ({setting.value})"
                         reporter.warn(output, file_path, setting.lineno)
 
@@ -95,7 +95,7 @@ def check_time_format(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("time_format", "magic8")):
+                if not ignorable(stanza, ("time_format", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
 
@@ -111,17 +111,17 @@ def check_truncate(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("truncate", "magic8")):
+                if not ignorable(stanza, ("truncate", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
             else:
                 setting = stanza.get_option(property)
                 if not _is_numeric(setting.value):
-                    if not ignorable(setting, ("truncate", "magic8"), stanza=stanza):
+                    if not ignorable(setting, ("truncate", "magic8"), stanza=stanza, config=props_config):
                         output = f"{property} is not numeric for [{stanza.name}] ({setting.value})"
                         reporter.warn(output, file_path, setting.lineno)
                 elif not int(setting.value) > 0:
-                    if not ignorable(setting, ("truncate", "magic8"), stanza=stanza):
+                    if not ignorable(setting, ("truncate", "magic8"), stanza=stanza, config=props_config):
                         output = f"{property} is not > 0 [{stanza.name}] ({setting.value})"
                         reporter.warn(output, file_path, setting.lineno)
 
@@ -137,11 +137,11 @@ def check_event_breaker_enable(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("truncate", "magic8")):
+                if not ignorable(stanza, ("truncate", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
             elif not normalizeBoolean(stanza.get_option(property).value):
-                if not ignorable(stanza.get_option(property), ("truncate", "magic8"), stanza=stanza):
+                if not ignorable(stanza.get_option(property), ("truncate", "magic8"), stanza=stanza, config=props_config):
                     output = f"{property} is false, when it should be true for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)
 
@@ -157,6 +157,6 @@ def check_event_breaker(app, reporter):
         props_config: ConfigurationFile = app.props_conf(directory)
         for stanza in props_config.sections():
             if not stanza.has_option(property):
-                if not ignorable(stanza, ("event_breaker", "magic8")):
+                if not ignorable(stanza, ("event_breaker", "magic8"), config=props_config):
                     output = f"{property} is not set for [{stanza.name}]"
                     reporter.warn(output, file_path, stanza.lineno)

@@ -162,6 +162,24 @@ class TestCheckMagicEight(BaseTest):
             getattr(check_magic_eight, check_name)(app, self.reporter)
         self.assert_mocked_calls("test_data/check_magic_eight_dirty")
 
+    def test_ignore(self):
+        """
+        """
+        from checks import check_magic_eight
+        app = self.get_app("test_data/check_magic_eight_ignores")
+        for check_name in [c for c in dir(check_magic_eight) if c.startswith("check_")]:
+            getattr(check_magic_eight, check_name)(app, self.reporter)
+        self.assert_clean()
+        
+    def test_ignore_global(self):
+        """
+        """
+        from checks import check_magic_eight
+        app = self.get_app("test_data/check_magic_eight_ignores global")
+        for check_name in [c for c in dir(check_magic_eight) if c.startswith("check_")]:
+            getattr(check_magic_eight, check_name)(app, self.reporter)
+        self.assert_clean()
+
     def test_dirty_truncate(self):
         """
         Checks for TRUNCATE checks
